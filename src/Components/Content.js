@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 const ContentWrapper = styled.div`
@@ -14,20 +14,19 @@ const ContentWrapper = styled.div`
 `;
 
 const Contents = styled.div`
-    font-size: 20px;
-    font-weight: bold;
-    text-shadow: 2px 2px 2px rgba(0,0,0,0.15);
+  font-size: 20px;
+  font-weight: bold;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.15);
 `;
 
 function Content() {
-
-    return (
-        <>
-        <ContentWrapper>
-            <Contents>우리 동네 식재료</Contents>
-        </ContentWrapper>
-        </>
-    );
+  return (
+    <>
+      <ContentWrapper>
+        <Contents>우리 동네 식재료</Contents>
+      </ContentWrapper>
+    </>
+  );
 }
 
 export default Content;
