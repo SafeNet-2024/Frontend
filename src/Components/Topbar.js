@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import logo from "../Assets/logo.png";
 import chatting from "../Assets/chatting.png";
-import like_red from "../Assets/like_red.png";
 
 const TopBarWrapper = styled.div`
   display: flex;
@@ -90,13 +89,6 @@ function Topbar() {
     navigate("/chatting");
   };
 
-  // 찜 버튼 클릭 시 실행될 함수
-  const handleLike = () => {
-    // 여기에 찜목록페이지로 이동하는 동작을 추가하세요
-    console.log("찜목록 페이지로 이동합니다.");
-    navigate("/mypage");
-  };
-
   return (
     <TopBarWrapper>
       <Logo src={logo}></Logo>
@@ -104,9 +96,6 @@ function Topbar() {
       <ButtonsWrapper>
         <Button type="button" onClick={handleChatting}>
           <ImgButton src={chatting}></ImgButton>
-        </Button>
-        <Button type="button" onClick={handleLike}>
-          <ImgButton src={like_red}></ImgButton>
         </Button>
         <Button type="button" onClick={handleLogout}>
           로그아웃

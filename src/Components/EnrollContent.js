@@ -1,8 +1,12 @@
 import React, { useState } from "react";
+import Calendar from "react-calendar";
+import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import goback from "../Assets/goback.png";
+import down from "../Assets/down.png";
 import "../Css/enrollContent.css";
+import "react-calendar/dist/Calendar.css";
 
 const ContentWrapper = styled.div`
   width: auto;
@@ -64,8 +68,65 @@ const Button = styled.button`
 }
 `;
 
+const CalendarContainer = styled.div`
+  position: relative;
+  margin-top: 10px;
+`;
+
+const DropdownButton = styled.button`
+  width: 200px;
+  height: 43px;
+  border: 2px solid #4461f2;
+  border-radius: 10px;
+  padding: 0px 12px;
+  color: var(--festie-gray-800, #3a3a3a);
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  text-align: start;
+  appearance: none;
+  background-color: white;
+  background-image: url(${down});
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+`;
+
+const CalendarWrapper = styled.div`
+  z-index: 11;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  display: ${(props) => (props.isOpen ? "block" : "none")};
+`;
+
+const EnrollButton = styled.button`
+  position: relative;
+  width: 80px;
+  border: none;
+  margin: 0 auto;
+  display: block;
+  padding: 7px 10px;
+  border-radius: 50px;
+  border: 2px solid #4461F2;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 16px;
+  text-shadow: 2px 2px 2px rgba(0,0,0,0.15);
+  transition: 0.25s;
+  color: #ffffff;
+  background-color: #4461F2;
+}
+`;
+
 function EnrollContent() {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("");
+  const [nowDate, setNowDate] = useState("날짜");
+  const [dateValue, onChange] = useState(new Date());
+  const [isOpen, setIsOpen] = useState(false);
+  const today = new Date();
 
   const handleCategoryClick = (section) => {
     if (section !== activeSection) {
@@ -73,8 +134,23 @@ function EnrollContent() {
     }
   };
 
+  const handleToggelCalendar = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleDateChange = (selectedDate) => {
+    onChange(selectedDate);
+    setIsOpen(false);
+    setNowDate(moment(selectedDate).format("YYYY년 MM월 DD일"));
+  };
+
   // 첨부 버튼 클릭 시
   const handleAttach = () => {};
+
+  // 등록 버튼 클릭 시
+  const handleEnroll = () => {
+    navigate("/");
+  };
 
   return (
     <>
@@ -122,11 +198,19 @@ function EnrollContent() {
             </Menu>
             <Menu>
               구매 일자
-              <input className="input_content" />
-              년
-              <input className="input_content" />
-              월
-              <input className="input_content" />일
+              <CalendarContainer>
+                <DropdownButton onClick={handleToggelCalendar}>
+                  {nowDate}
+                </DropdownButton>
+                <CalendarWrapper isOpen={isOpen}>
+                  <Calendar
+                    onChange={handleDateChange}
+                    value={dateValue}
+                    formatDay={(locale, date) => moment(date).format("DD")}
+                    maxDate={today}
+                  ></Calendar>
+                </CalendarWrapper>
+              </CalendarContainer>
             </Menu>
             <Menu>
               원가 증빙용 영수증 첨부
@@ -135,6 +219,9 @@ function EnrollContent() {
               </Button>
             </Menu>
           </Content>
+          <EnrollButton type="button" onClick={handleEnroll}>
+            등록
+          </EnrollButton>
         </Contents>
       </ContentWrapper>
     </>
