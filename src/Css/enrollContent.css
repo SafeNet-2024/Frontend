@@ -72,3 +72,25 @@
   border: 1px solid #eee;
   outline: none;
 }
+
+.react-calendar {
+  border-radius: 10px;
+  border: 1px solid var(--festie-gray-400, #c8c8c8);
+  font-family: "Noto Sans KR";
+}
+
+.react-calendar__navigation__label > span {
+  color: var(--festie-gray-800, #3a3a3a);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 140%;
+}
+
+.react-calendar__month-view__days__day--weekend {
+  color: var(--festie-gray-800, #3a3a3a);
+}
+
+.react-calendar__tile--now {
+  background: white;
+  color: var(--festie-gray-800, #3a3a3a);
+}
