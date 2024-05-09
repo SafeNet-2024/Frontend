@@ -13,6 +13,11 @@ const TopBarWrapper = styled.div`
     0 4px 4px rgba(0, 0, 0, 0.2), 0 8px 8px rgba(0, 0, 0, 0.2);
 `;
 
+const LogoWrapper = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
 const Logo = styled.img`
   width: 50px;
   height: 50px;
@@ -61,6 +66,10 @@ const ImgButton = styled.img`
 function Topbar() {
   const navigate = useNavigate();
 
+  const handleLogo = () => {
+    navigate("/");
+  };
+
   // 로그아웃 버튼 클릭 시 실행될 함수
   const handleLogout = () => {
     // 여기에 로그아웃에 대한 동작을 추가하세요
@@ -91,8 +100,10 @@ function Topbar() {
 
   return (
     <TopBarWrapper>
-      <Logo src={logo}></Logo>
-      <LogoText>GROSHARE</LogoText>
+      <LogoWrapper onClick={handleLogo}>
+        <Logo src={logo}></Logo>
+        <LogoText>GROSHARE</LogoText>
+      </LogoWrapper>
       <ButtonsWrapper>
         <Button type="button" onClick={handleChatting}>
           <ImgButton src={chatting}></ImgButton>

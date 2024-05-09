@@ -94,3 +94,23 @@
   background: white;
   color: var(--festie-gray-800, #3a3a3a);
 }
+
+.input_post {
+  font-family: "Noto Sans KR";
+  width: 400px;
+  height: 100px;
+  padding: 10px 15px;
+  font-size: 15px;
+  font-weight: bold;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
+  border-width: 0;
+  border: none;
+  outline: none;
+  resize: none;
+  background-color: transparent;
+}
+
+.input_post::placeholder {
+  color: #707070;
+  opacity: 0.68;
+}

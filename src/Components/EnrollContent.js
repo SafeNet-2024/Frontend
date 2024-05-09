@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Calendar from "react-calendar";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
@@ -117,20 +117,49 @@ const EnrollButton = styled.button`
   transition: 0.25s;
   color: #ffffff;
   background-color: #4461F2;
+  opacity: ${(props) =>
+    props.disabled ? "0.5" : "1"}; /* 비활성화 시 반투명 */
+  cursor: ${(props) =>
+    props.disabled ? "not-allowed" : "pointer"}; /* 비활성화 시 커서 변경 */
 }
 `;
 
 function EnrollContent() {
   const navigate = useNavigate();
+  const [title, setTitle] = useState(""); // 제목
+  const [category, setCategory] = useState(""); // 카테고리
+  const [price, setPrice] = useState(""); // 가격
+  const [capacity, setCapacity] = useState(""); // 용량
+  const [post, setPost] = useState(""); //글내용
+
   const [activeSection, setActiveSection] = useState("");
   const [nowDate, setNowDate] = useState("날짜");
   const [dateValue, onChange] = useState(new Date());
   const [isOpen, setIsOpen] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const today = new Date();
+
+  useEffect(() => {
+    const isButtonDisabled = !(
+      title.trim() &&
+      category &&
+      price.trim() &&
+      capacity.trim() &&
+      post.trim() &&
+      nowDate !== "날짜"
+    );
+    setIsButtonDisabled(isButtonDisabled);
+  }, [title, category, price, capacity, post, nowDate]);
+
+  const handleGoBack = () => {
+    navigate("/");
+  };
 
   const handleCategoryClick = (section) => {
     if (section !== activeSection) {
       setActiveSection(section);
+      setCategory(section);
+      console.log(section, "카테고리");
     }
   };
 
@@ -155,13 +184,15 @@ function EnrollContent() {
   return (
     <>
       <ContentWrapper>
-        <GoBack src={goback} />
+        <GoBack src={goback} onClick={handleGoBack} />
         <Contents>
           <Content>
             <input
               className="input_title"
               type="input"
               placeholder="제목을 입력하세요"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
             />
           </Content>
           <Content>
@@ -169,32 +200,42 @@ function EnrollContent() {
               카테고리 선택
               <div>
                 <ul id="categoryList">
-                  {["육류", "채소", "어패류", "과일"].map((category, index) => (
-                    <li
-                      key={index}
-                      onClick={() => handleCategoryClick(`section${index + 1}`)}
-                    >
-                      <a
-                        className={`category_item ${
-                          activeSection === `section${index + 1}`
-                            ? "active"
-                            : ""
-                        }`}
+                  {["육류", "채소", "어패류", "과일"].map(
+                    (categoryItem, index) => (
+                      <li
+                        key={index}
+                        onClick={() => handleCategoryClick(categoryItem)}
                       >
-                        {category}
-                      </a>
-                    </li>
-                  ))}
+                        <a
+                          className={`category_item ${
+                            category === categoryItem ? "active" : ""
+                          }`}
+                        >
+                          {categoryItem}
+                        </a>
+                      </li>
+                    )
+                  )}
                 </ul>
               </div>
             </Menu>
             <Menu>
               가격
-              <input className="input_content" />원
+              <input
+                className="input_content"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+              원
             </Menu>
             <Menu>
               용량
-              <input className="input_content" />g
+              <input
+                className="input_content"
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+              />
+              g
             </Menu>
             <Menu>
               구매 일자
@@ -219,7 +260,20 @@ function EnrollContent() {
               </Button>
             </Menu>
           </Content>
-          <EnrollButton type="button" onClick={handleEnroll}>
+          <Content>
+            <textarea
+              className="input_post"
+              type="text-area"
+              placeholder="내용"
+              value={post}
+              onChange={(e) => setPost(e.target.value)}
+            />
+          </Content>
+          <EnrollButton
+            type="button"
+            onClick={handleEnroll}
+            disabled={isButtonDisabled}
+          >
             등록
           </EnrollButton>
         </Contents>
