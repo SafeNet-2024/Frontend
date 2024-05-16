@@ -144,6 +144,8 @@ function Content() {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [receiverName, setReceiverName] = useState(null);
+  const [postId, setPostId] = useState(null);
 
   useEffect(() => {
     // // 서버에서 데이터를 가져오는 비동기 함수
@@ -193,8 +195,74 @@ function Content() {
     setIsModalOpen(true);
   };
 
-  //채팅하기 버튼 클릭 시
-  const handleChatting = () => {};
+  const checkChatroomExistence = async (roomId) => {
+    try {
+      const response = await axios.get(`/api/rooms/${roomId}`, {
+        // headers: {
+        //   ACCESS_TOKEN: `Bearer ${accessToken}`,
+        //   REFRESH_TOKEN: refreshToken,
+        // },
+      });
+      return response.data; // 채팅방이 존재하면 해당 채팅방 정보를 반환
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        // 404 에러일 경우 채팅방이 존재하지 않음을 의미
+        return null;
+      }
+      console.error("Error checking chatroom existence:", error);
+      throw error; // 기타 에러는 예외로 처리
+    }
+  };
+
+  const createChatroom = async (roomName) => {
+    try {
+      const response = await axios.post(
+        "/api/rooms",
+        { receiver: receiverName, postId: postId }
+        // {
+        //   headers: {
+        //     ACCESS_TOKEN: `Bearer ${accessToken}`,
+        //     REFRESH_TOKEN: refreshToken,
+        //   },
+        // }
+      );
+      return response.data; // 새 채팅방이 생성되면 해당 채팅방 정보를 반환
+    } catch (error) {
+      console.error("Error creating chatroom:", error);
+      throw error; // 에러 처리
+    }
+  };
+
+  const fetchChatroomDTO = async (roomId) => {
+    try {
+      const response = await axios.get(`/api/rooms/${roomId}`);
+      return response.data; // 채팅방 정보를 반환
+    } catch (error) {
+      console.error("Error fetching chatroom DTO:", error);
+      throw error; // 에러 처리
+    }
+  };
+
+  // 채팅하기 버튼 클릭 시
+  const handleChatting = async (roomId, roomName) => {
+    try {
+      // 채팅방이 있는지 확인
+      const existingRoomDTO = await checkChatroomExistence(roomId);
+
+      if (existingRoomDTO) {
+        // 채팅방이 있을 경우 해당 채팅방의 DTO를 가져와 채팅 페이지로 이동
+        navigate("/chatting", { state: { roomDTO: existingRoomDTO } });
+      } else {
+        // 채팅방이 없을 경우 새 채팅방 생성
+        const newRoomDTO = await createChatroom(roomName);
+        navigate("/chatting", { state: { roomDTO: newRoomDTO } });
+      }
+    } catch (error) {
+      // 에러 처리
+      console.error("Error handling chatting:", error);
+      // 필요에 따라 사용자에게 알림을 표시하거나 기타 작업을 수행할 수 있습니다.
+    }
+  };
 
   return (
     <>
