@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Calendar from "react-calendar";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
@@ -178,7 +179,32 @@ function EnrollContent() {
 
   // 등록 버튼 클릭 시
   const handleEnroll = () => {
-    navigate("/");
+    const body = {
+      // 작성자-- writer: props.user.userData._id,
+      id: 1, // 임시로 설정
+      title: title,
+      category: category,
+      price: price,
+      capacity: capacity,
+      post: post,
+      date: nowDate,
+    };
+
+    navigate("/"); // 메인 페이지로 이동
+
+    // axios
+    //   .post("/api/product", body)
+    //   .then((response) => {
+    //     if (response.data.success) {
+    //       alert("상품 등록에 성공했습니다.");
+    //       navigate("/"); // 메인 페이지로 이동
+    //     } else {
+    //       alert("상품 등록에 실패했습니다.");
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.error("상품 등록 오류: ", error);
+    //   });
   };
 
   return (
@@ -270,7 +296,7 @@ function EnrollContent() {
             />
           </Content>
           <EnrollButton
-            type="button"
+            type="submit"
             onClick={handleEnroll}
             disabled={isButtonDisabled}
           >
