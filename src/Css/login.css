@@ -1,0 +1,83 @@
+.modal_container {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.login_title {
+  text-align: left;
+  font-weight: 900;
+  font-size: 21px;
+  color: #696969;
+  margin-left: 15px;
+  margin-top: 15px;
+}
+
+.login_div {
+  width: 100%;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.login_id,
+.login_pwd {
+  margin-top: 10px;
+  margin-left: 25px;
+  margin-bottom: 20px;
+  border-radius: 2px;
+  width: 350px;
+  height: 40px;
+  border: 1px solid #e5e5e5;
+  outline: none;
+  box-sizing: border-box;
+  font-size: 15px;
+  font-weight: 500;
+  border-width: 0 0 1.5px;
+}
+input::placeholder {
+  color: #9d9fa1;
+}
+
+.save_id {
+  margin-left: 30px;
+}
+
+label {
+  font-size: 15px;
+}
+
+.find_id_pwd {
+  width: 150px;
+  cursor: pointer;
+  background-color: white;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  margin-left: 130px;
+}
+
+.submit_div {
+  grid-template-columns: 45% auto;
+  margin-top: 40px;
+  margin-left: 25px;
+}
+
+.submit_div div {
+  text-align: center;
+}
+
+.submit_div div input {
+  width: 350px;
+  height: 40px;
+  cursor: pointer;
+  background-color: #4461f2;
+  border-radius: 5px;
+  border: none;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+}
