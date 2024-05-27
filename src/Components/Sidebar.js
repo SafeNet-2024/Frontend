@@ -15,7 +15,7 @@ const SidebarWrapper = styled.div`
   font-size: 45px;
   font-weight: bold;
   text-align: center;
-  padding-top: 50px;
+  padding-top: 70px;
 `;
 
 const BottomWrapper = styled.div`
@@ -28,9 +28,10 @@ const BottomWrapper = styled.div`
   justify-content: center;
   background-color: #4461f2;
   color: white;
-  font-size: 25px;
+  font-size: 30px;
   font-weight: bold;
   text-align: center;
+  padding-top: 300px;
 `;
 
 function Sidebar() {
@@ -38,7 +39,9 @@ function Sidebar() {
     <SidebarWrapper>
       GROSHARE
       <BottomWrapper>
-        Share, Don't Waste: Give Your Groceries New Life!
+        Share, Don't Waste:
+        <div>Give Your</div>
+        <div> Groceries New Life!</div>
       </BottomWrapper>
     </SidebarWrapper>
   );

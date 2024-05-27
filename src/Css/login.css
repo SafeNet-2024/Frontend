@@ -10,7 +10,6 @@
   font-weight: 900;
   font-size: 21px;
   color: #696969;
-  margin-left: 15px;
   margin-top: 15px;
 }
 
@@ -26,7 +25,7 @@
 .login_id,
 .login_pwd {
   margin-top: 10px;
-  margin-left: 25px;
+  margin-left: 15px;
   margin-bottom: 20px;
   border-radius: 2px;
   width: 350px;
@@ -43,7 +42,7 @@ input::placeholder {
 }
 
 .save_id {
-  margin-left: 30px;
+  margin-left: 20px;
 }
 
 label {
@@ -57,20 +56,18 @@ label {
   border: none;
   font-size: 14px;
   font-weight: 600;
-  margin-left: 130px;
+  margin-left: 120px;
 }
 
 .submit_div {
-  grid-template-columns: 45% auto;
+  width: 350px;
+  height: 40px;
   margin-top: 40px;
-  margin-left: 25px;
-}
-
-.submit_div div {
+  margin-left: 20px;
   text-align: center;
 }
 
-.submit_div div input {
+.submit_div input {
   width: 350px;
   height: 40px;
   cursor: pointer;
@@ -79,5 +76,25 @@ label {
   border: none;
   color: white;
   font-size: 15px;
+  font-weight: 600;
+}
+
+.btn_div {
+  width: 100px;
+  height: 30px;
+  margin-top: 10px;
+  margin-left: 20px;
+  text-align: center;
+}
+
+.btn_div input {
+  width: 100px;
+  height: 30px;
+  cursor: pointer;
+  background-color: #4461f2;
+  border-radius: 5px;
+  border: none;
+  color: white;
+  font-size: 14px;
   font-weight: 600;
 }

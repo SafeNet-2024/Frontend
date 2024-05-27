@@ -5,13 +5,18 @@ import styled from "styled-components";
 import "../Css/login.css";
 
 const Container = styled.div`
+  width: 800px;
+  height: 500px;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 `;
 
 const SignUpBtn = styled.button`
   float: right;
-  margin-right: 100px;
-  margin-top: 20px;
+  margin-left: 500px;
+  margin-top: 50px;
   font-weight: bold;
   border: none;
   color: #4461f2;
@@ -27,8 +32,7 @@ const SignUpBtn = styled.button`
 `;
 
 const LoginWrapper = styled.div`
-  width: 400px;
-  height: 500px;
+  margin-left: 400px;
 `;
 
 function Login() {
@@ -36,42 +40,51 @@ function Login() {
   const [useremail, setUseremail] = useState("");
   const [password, setPassword] = useState("");
 
+  const handleSignUp = () => {
+    navigate("/signup");
+  };
+
   const handleLogin = async () => {
     try {
-      const res = await axios.post("/api/auth/login", {
-        useremail,
-        password,
-      });
-      // 로그인이 성공한 경우에 대한 처리
-      const user = res.data;
-      const jwtToken = user.token;
-      const { result, errorCause } = res.data;
+      if (useremail.trim() === "") {
+        alert("이메일을 입력해주세요.");
+      } else if (password.trim() === "") {
+        alert("비밀번호를 입력해주세요.");
+      } else {
+        const res = await axios.post("/api/auth/login", {
+          id: useremail,
+          password: password,
+        });
+        // 로그인이 성공한 경우에 대한 처리
+        if (res.status === 200) {
+          // const user = res.data;
+          // const accessToken = user.token;
+          console.log(res.data);
 
-      // 토큰 저장
-      sessionStorage.setItem("userToken", jwtToken);
-      console.log(res.data);
-      onLoginSuccess();
+          // 토큰 저장
+          localStorage.setItem("accessToken", res.data["accessToken"]);
+          localStorage.setItem("refreshToken", res.data["refreshToken"]);
+          navigate("/"); // 로그인 성공 시 대시보드 페이지로 이동
+        }
+      }
     } catch (error) {
       // 로그인이 실패한 경우에 대한 처리
       console.error("로그인 실패:", error);
+      alert("로그인에 실패하였습니다.");
     }
-  };
-
-  const onLoginSuccess = () => {
-    navigate("/"); // 로그인 성공 시 대시보드 페이지로 이동
   };
 
   return (
     <Container>
       <div>
-        <SignUpBtn>회원가입</SignUpBtn>
+        <SignUpBtn onClick={handleSignUp}>회원가입</SignUpBtn>
       </div>
       <LoginWrapper>
         <div
           style={{
             fontSize: "35px",
             fontWeight: "bold",
-            width: "400px",
+            width: "800px",
             marginTop: "50px",
           }}
         >
@@ -126,9 +139,7 @@ function Login() {
             </div>
 
             <div className="submit_div">
-              <div>
-                <input type="button" value="로그인" onClick={handleLogin} />
-              </div>
+              <input type="button" value="로그인" onClick={handleLogin} />
             </div>
           </div>
         </form>
