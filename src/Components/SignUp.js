@@ -87,9 +87,9 @@ function SignUp() {
         useremail.trim() &&
         password.trim() &&
         nickname.trim() &&
-        phonenum.trim() &&
-        rightcode.trim() &&
-        rightcode === certcode
+        phonenum.trim() // &&
+        // rightcode.trim() &&
+        // rightcode === certcode
       ) {
         if (password.length < 8 || password.length > 16) {
           alert("비밀번호는 8자에서 16자 사이여야 합니다.");
@@ -99,22 +99,23 @@ function SignUp() {
           alert("닉네임은 두 글자 이상이어야 합니다.");
           return;
         }
-        const res = await axios.post("/api/auth/signup", {
-          id: useremail,
-          password: password,
-          name: nickname,
-          phoneNumber: phonenum,
-        });
-        // 회원가입이 성공한 경우에 대한 처리
-        if (res.status === 200) {
-          // const user = res.data;
-          // const accessToken = user.token;
-          console.log(res.data);
-          alert(res.data["result"]);
-          navigate("/login"); //로그인 페이지로 다시 이동
-        } else if (res.status === 404) {
-          alert("이미 가입된 이메일입니다");
-        }
+        // const res = await axios.post("/api/auth/signup", {
+        //   id: useremail,
+        //   password: password,
+        //   name: nickname,
+        //   phoneNumber: phonenum,
+        // });
+        // // 회원가입이 성공한 경우에 대한 처리
+        // if (res.status === 200) {
+        //   // const user = res.data;
+        //   // const accessToken = user.token;
+        //   console.log(res.data);
+        //   alert(res.data["result"]);
+        //   navigate("/login"); //로그인 페이지로 다시 이동
+        // } else if (res.status === 404) {
+        //   alert("이미 가입된 이메일입니다");
+        // }
+        navigate("/login");
       } else {
         alert("입력 항목을 다시 확인해주세요");
       }

@@ -51,21 +51,22 @@ function Login() {
       } else if (password.trim() === "") {
         alert("비밀번호를 입력해주세요.");
       } else {
-        const res = await axios.post("/api/auth/login", {
-          id: useremail,
-          password: password,
-        });
-        // 로그인이 성공한 경우에 대한 처리
-        if (res.status === 200) {
-          // const user = res.data;
-          // const accessToken = user.token;
-          console.log(res.data);
+        // const res = await axios.post("/api/auth/login", {
+        //   id: useremail,
+        //   password: password,
+        // });
+        // // 로그인이 성공한 경우에 대한 처리
+        // if (res.status === 200) {
+        //   // const user = res.data;
+        //   // const accessToken = user.token;
+        //   console.log(res.data);
 
-          // 토큰 저장
-          localStorage.setItem("accessToken", res.data["accessToken"]);
-          localStorage.setItem("refreshToken", res.data["refreshToken"]);
-          navigate("/"); // 로그인 성공 시 대시보드 페이지로 이동
-        }
+        //   // 토큰 저장
+        //   localStorage.setItem("accessToken", res.data["accessToken"]);
+        //   localStorage.setItem("refreshToken", res.data["refreshToken"]);
+        //   navigate("/"); // 로그인 성공 시 대시보드 페이지로 이동
+        // }
+        navigate("/");
       }
     } catch (error) {
       // 로그인이 실패한 경우에 대한 처리

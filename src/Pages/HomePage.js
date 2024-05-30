@@ -8,18 +8,18 @@ import Content from "../Components/Content.js";
 function HomePage() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // 로그인 상태 확인 함수 (여기서는 토큰 유무를 확인)
-    const checkLoginStatus = () => {
-      const accessToken = localStorage.getItem("ACCESS_TOKEN");
-      const refreshToken = localStorage.getItem("REFRESH_TOKEN");
-      return accessToken && refreshToken;
-    };
+  // useEffect(() => {
+  //   // 로그인 상태 확인 함수 (여기서는 토큰 유무를 확인)
+  //   const checkLoginStatus = () => {
+  //     const accessToken = localStorage.getItem("accessToken");
+  //     const refreshToken = localStorage.getItem("refreshToken");
+  //     return accessToken && refreshToken;
+  //   };
 
-    if (!checkLoginStatus()) {
-      navigate("/login"); // 로그인되지 않은 경우 로그인 페이지로 이동
-    }
-  }, [navigate]);
+  //   if (!checkLoginStatus()) {
+  //     navigate("/login"); // 로그인되지 않은 경우 로그인 페이지로 이동
+  //   }
+  // }, [navigate]);
 
   return (
     <>
