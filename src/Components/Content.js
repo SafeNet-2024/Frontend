@@ -150,9 +150,19 @@ function Content() {
   useEffect(() => {
     // // 서버에서 데이터를 가져오는 비동기 함수
     // const fetchProducts = async () => {
+
+    // const accessToken = localStorage.getItem("accessToken");
+    // const refreshToken = localStorage.getItem("refreshToken");
+
+    // const headers = {
+    //   "Content-Type": "multipart/form-data",
+    //   ACCESS_TOKEN: `Bearer ${accessToken}`,
+    //   REFRESH_TOKEN: refreshToken,
+    // };
+
     //   try {
     //     // axios를 사용하여 서버에서 데이터 가져오기
-    //     const response = await axios.get("/api/products");
+    //     const response = await axios.get("/api/v1/posts", {headers: headers});
     //     setProducts(response.data); // 가져온 데이터를 state에 저장
     //   } catch (error) {
     //     console.error("데이터를 가져오는 중 에러 발생:", error);
@@ -161,14 +171,12 @@ function Content() {
 
     // 임시 상품 데이터 생성 함수
     const createTempProduct = (id) => ({
-      id,
+      postId,
+      likeCount: 0,
+      imageUrl: ex_img,
       title: "파 한 단 가져가실 분",
-      category: "채소",
-      price: 2000,
-      capacity: 500,
-      date: "2024-05-10",
-      post: "너무 많이 사서 싸게 팝니다~",
-      src: ex_img,
+      count: 3,
+      cost: 2000,
       liked: false,
     });
 
@@ -190,78 +198,102 @@ function Content() {
   };
 
   //더보기 버튼 클릭 시
-  const handleMore = (product) => {
+  const handleMore = async (product) => {
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    // const headers = {
+    //   "Content-Type": "multipart/form-data",
+    //   ACCESS_TOKEN: `Bearer ${accessToken}`,
+    //   REFRESH_TOKEN: refreshToken,
+    // };
+
+    // try {
+    //   // axios를 사용하여 서버에서 데이터 가져오기
+    //   const response = await axios.get("/api/v1/posts/" + product.postId, {
+    //     headers: headers,
+    //   });
+    //   setSelectedProduct(response.data);
+    //   setIsModalOpen(true);
+    // } catch (error) {
+    //   console.error("데이터를 가져오는 중 에러 발생:", error);
+    // }
+
     setSelectedProduct(product);
     setIsModalOpen(true);
   };
 
-  const checkChatroomExistence = async (roomId) => {
-    try {
-      const response = await axios.get(`/api/rooms/${roomId}`, {
-        // headers: {
-        //   ACCESS_TOKEN: `Bearer ${accessToken}`,
-        //   REFRESH_TOKEN: refreshToken,
-        // },
-      });
-      return response.data; // 채팅방이 존재하면 해당 채팅방 정보를 반환
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        // 404 에러일 경우 채팅방이 존재하지 않음을 의미
-        return null;
-      }
-      console.error("Error checking chatroom existence:", error);
-      throw error; // 기타 에러는 예외로 처리
-    }
-  };
+  // const checkChatroomExistence = async (roomId) => {
+  //   try {
+  //     const response = await axios.get(`/api/rooms/${roomId}`, {
+  //       // headers: {
+  //       //   ACCESS_TOKEN: `Bearer ${accessToken}`,
+  //       //   REFRESH_TOKEN: refreshToken,
+  //       // },
+  //     });
+  //     return response.data; // 채팅방이 존재하면 해당 채팅방 정보를 반환
+  //   } catch (error) {
+  //     if (error.response && error.response.status === 404) {
+  //       // 404 에러일 경우 채팅방이 존재하지 않음을 의미
+  //       return null;
+  //     }
+  //     console.error("Error checking chatroom existence:", error);
+  //     throw error; // 기타 에러는 예외로 처리
+  //   }
+  // };
 
-  const createChatroom = async (roomName) => {
-    try {
-      const response = await axios.post(
-        "/api/rooms",
-        { receiver: receiverName, postId: postId }
-        // {
-        //   headers: {
-        //     ACCESS_TOKEN: `Bearer ${accessToken}`,
-        //     REFRESH_TOKEN: refreshToken,
-        //   },
-        // }
-      );
-      return response.data; // 새 채팅방이 생성되면 해당 채팅방 정보를 반환
-    } catch (error) {
-      console.error("Error creating chatroom:", error);
-      throw error; // 에러 처리
-    }
-  };
+  // const createChatroom = async (roomName) => {
+  //   try {
+  //     const response = await axios.post(
+  //       "/api/rooms",
+  //       { receiver: receiverName, postId: postId }
+  //       // {
+  //       //   headers: {
+  //       //     ACCESS_TOKEN: `Bearer ${accessToken}`,
+  //       //     REFRESH_TOKEN: refreshToken,
+  //       //   },
+  //       // }
+  //     );
+  //     return response.data; // 새 채팅방이 생성되면 해당 채팅방 정보를 반환
+  //   } catch (error) {
+  //     console.error("Error creating chatroom:", error);
+  //     throw error; // 에러 처리
+  //   }
+  // };
 
-  const fetchChatroomDTO = async (roomId) => {
-    try {
-      const response = await axios.get(`/api/rooms/${roomId}`);
-      return response.data; // 채팅방 정보를 반환
-    } catch (error) {
-      console.error("Error fetching chatroom DTO:", error);
-      throw error; // 에러 처리
-    }
-  };
+  // const fetchChatroomDTO = async (roomId) => {
+  //   try {
+  //     const response = await axios.get(`/api/rooms/${roomId}`);
+  //     return response.data; // 채팅방 정보를 반환
+  //   } catch (error) {
+  //     console.error("Error fetching chatroom DTO:", error);
+  //     throw error; // 에러 처리
+  //   }
+  // };
 
   // 채팅하기 버튼 클릭 시
-  const handleChatting = async (roomId, roomName) => {
-    try {
-      // 채팅방이 있는지 확인
-      const existingRoomDTO = await checkChatroomExistence(roomId);
-
-      if (existingRoomDTO) {
-        // 채팅방이 있을 경우 해당 채팅방의 DTO를 가져와 채팅 페이지로 이동
-        navigate("/chatting", { state: { roomDTO: existingRoomDTO } });
-      } else {
-        // 채팅방이 없을 경우 새 채팅방 생성
-        const newRoomDTO = await createChatroom(roomName);
-        navigate("/chatting", { state: { roomDTO: newRoomDTO } });
-      }
-    } catch (error) {
-      // 에러 처리
-      console.error("Error handling chatting:", error);
-      // 필요에 따라 사용자에게 알림을 표시하거나 기타 작업을 수행할 수 있습니다.
+  const handleChatting = async () => {
+    if (selectedProduct) {
+      const { postId, writer } = selectedProduct;
     }
+    navigate("/chatting");
+    // try {
+    //   // 채팅방이 있는지 확인
+    //   const existingRoomDTO = await checkChatroomExistence(roomId);
+
+    //   if (existingRoomDTO) {
+    //     // 채팅방이 있을 경우 해당 채팅방의 DTO를 가져와 채팅 페이지로 이동
+    //     navigate("/chatting", { state: { roomDTO: existingRoomDTO } });
+    //   } else {
+    //     // 채팅방이 없을 경우 새 채팅방 생성
+    //     const newRoomDTO = await createChatroom(roomName);
+    //     navigate("/chatting", { state: { roomDTO: newRoomDTO } });
+    //   }
+    // } catch (error) {
+    //   // 에러 처리
+    //   console.error("Error handling chatting:", error);
+    //   // 필요에 따라 사용자에게 알림을 표시하거나 기타 작업을 수행할 수 있습니다.
+    // }
   };
 
   return (
@@ -272,8 +304,8 @@ function Content() {
       <ProductList>
         {/* 서버에서 가져온 데이터를 반복하여 각각의 상품을 표시 */}
         {products.map((product, index) => (
-          <Product key={product.id}>
-            <ProductImage src={product.src} />
+          <Product key={product.postId}>
+            <ProductImage src={product.imageUrl} />
             <div>{product.title}</div>
             <div>
               <LikeButton
@@ -302,13 +334,14 @@ function Content() {
             </CloseBtn>
           </div>
           <div style={{ display: "flex" }}>
-            <ModalImg src={selectedProduct && selectedProduct.src} />
+            <ModalImg src={selectedProduct && selectedProduct.imageUrl} />
             <div style={{ marginLeft: "15px" }}>
               <ModalPost>
                 <div>
                   <h3>{selectedProduct && selectedProduct.title}</h3>
+                  <div>{selectedProduct && selectedProduct.writer}</div>
                   <Line />
-                  <p>{selectedProduct && selectedProduct.post}</p>
+                  <p>{selectedProduct && selectedProduct.contents}</p>
                   <Line />
                   <div
                     className="category_item"
@@ -317,7 +350,7 @@ function Content() {
                     {selectedProduct && selectedProduct.category}
                   </div>
                   <div style={{ float: "right", fontWeight: "bold" }}>
-                    {selectedProduct && selectedProduct.price}원
+                    {selectedProduct && selectedProduct.cost}원
                   </div>
                 </div>
               </ModalPost>
