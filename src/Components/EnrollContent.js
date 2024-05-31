@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import goback from "../Assets/goback.png";
 import down from "../Assets/down.png";
+import upload_img from "../Assets/upload_img.png";
 import "../Css/enrollContent.css";
 import "react-calendar/dist/Calendar.css";
 
@@ -67,6 +68,23 @@ const Button = styled.button`
   color: #4461F2;
   background-color: #ffffff;
 }
+`;
+
+const Label = styled.label`
+  display: inline-block;
+  padding: 5px 8px;
+  background-position: center;
+  border: 2px solid #4461f2;
+  cursor: pointer;
+  margin-top: 10px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 13px;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
+  transition: 0.25s;
+  color: #4461f2;
+  background-color: #ffffff;
 `;
 
 const CalendarContainer = styled.div`
@@ -133,6 +151,9 @@ function EnrollContent() {
   const [capacity, setCapacity] = useState(""); // 용량
   const [post, setPost] = useState(""); //글내용
 
+  const [uploadImgUrl, setUploadImgUrl] = useState(""); // 상품 이미지
+  const [uploadReceipt, setUploadReceipt] = useState(""); // 영수증 이미지
+
   const [activeSection, setActiveSection] = useState("");
   const [nowDate, setNowDate] = useState("날짜");
   const [dateValue, onChange] = useState(new Date());
@@ -144,13 +165,26 @@ function EnrollContent() {
     const isButtonDisabled = !(
       title.trim() &&
       category &&
+      !isNaN(price) &&
       price.trim() &&
+      !isNaN(capacity) &&
       capacity.trim() &&
       post.trim() &&
-      nowDate !== "날짜"
+      nowDate !== "날짜" &&
+      uploadImgUrl.trim() &&
+      uploadReceipt.trim()
     );
     setIsButtonDisabled(isButtonDisabled);
-  }, [title, category, price, capacity, post, nowDate]);
+  }, [
+    title,
+    category,
+    price,
+    capacity,
+    post,
+    nowDate,
+    uploadImgUrl,
+    uploadReceipt,
+  ]);
 
   const handleGoBack = () => {
     navigate("/");
@@ -174,23 +208,70 @@ function EnrollContent() {
     setNowDate(moment(selectedDate).format("YYYY년 MM월 DD일"));
   };
 
-  // 첨부 버튼 클릭 시
-  const handleAttach = () => {};
+  const handleImgUpload = (e) => {
+    const { files } = e.target;
+    if (files.length === 0) {
+      setUploadImgUrl("");
+      return;
+    }
+    const uploadFile = files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(uploadFile);
+    reader.onloadend = () => {
+      setUploadImgUrl(reader.result);
+    };
+  };
+
+  const handleReceiptUpload = (e) => {
+    const { files } = e.target;
+    if (files.length === 0) {
+      setUploadReceipt("");
+      return;
+    }
+    const uploadFile = files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(uploadFile);
+    reader.onloadend = () => {
+      setUploadReceipt(reader.result);
+    };
+  };
 
   // 등록 버튼 클릭 시
-  const handleEnroll = () => {
-    const body = {
-      // 작성자-- writer: props.user.userData._id,
-      id: 1, // 임시로 설정
-      title: title,
-      category: category,
-      price: price,
-      capacity: capacity,
-      post: post,
-      date: nowDate,
+  const handleEnroll = async () => {
+    const formData = new FormData();
+
+    formData.append(
+      "post",
+      JSON.stringify({
+        category: category,
+        title: title,
+        cost: price,
+        count: capacity,
+        buyDate: nowDate,
+        contents: post,
+      })
+    );
+    formData.append("receiptImage", uploadReceipt);
+    formData.append("productImage", uploadImgUrl);
+
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    const headers = {
+      "Content-Type": "multipart/form-data",
+      ACCESS_TOKEN: `Bearer ${accessToken}`,
+      REFRESH_TOKEN: refreshToken,
     };
 
-    navigate("/"); // 메인 페이지로 이동
+    try {
+      await axios.post("/api/v1/posts", formData, {
+        headers: headers,
+      });
+      alert("게시글이 등록되었습니다");
+      navigate("/");
+    } catch (error) {
+      alert(error.data || "게시글 등록에 실패했습니다");
+    }
 
     // axios
     //   .post("/api/product", body)
@@ -205,6 +286,8 @@ function EnrollContent() {
     //   .catch((error) => {
     //     console.error("상품 등록 오류: ", error);
     //   });
+
+    navigate("/"); // 메인 페이지로 이동
   };
 
   return (
@@ -261,7 +344,7 @@ function EnrollContent() {
                 value={capacity}
                 onChange={(e) => setCapacity(e.target.value)}
               />
-              g
+              개
             </Menu>
             <Menu>
               구매 일자
@@ -281,9 +364,41 @@ function EnrollContent() {
             </Menu>
             <Menu>
               원가 증빙용 영수증 첨부
-              <Button type="button" onClick={handleAttach}>
+              <div style={{ marginTop: "15px" }}>
+                <img
+                  style={{ width: "90px", height: "90px" }}
+                  src={uploadReceipt}
+                  img="img"
+                />
+              </div>
+              <Label>
                 첨부
-              </Button>
+                <input
+                  style={{ marginLeft: "10px", display: "none" }}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleReceiptUpload}
+                />
+              </Label>
+            </Menu>
+            <Menu>
+              상품 이미지 업로드
+              <div style={{ marginTop: "15px" }}>
+                <img
+                  style={{ width: "200px", height: "150px" }}
+                  src={uploadImgUrl}
+                  img="img"
+                />
+              </div>
+              <Label>
+                업로드
+                <input
+                  style={{ marginLeft: "10px", display: "none" }}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImgUpload}
+                />
+              </Label>
             </Menu>
           </Content>
           <Content>

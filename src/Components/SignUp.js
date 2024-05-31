@@ -54,13 +54,16 @@ function SignUp() {
       if (useremail.trim() === "") {
         alert("이메일을 입력해주세요");
       } else {
-        const res = await axios.post("/api/auth/sendCode", {
-          email: useremail,
-        });
+        const res = await axios.post(
+          "http://3.37.120.73:8080/api/auth/sendCode",
+          new URLSearchParams({
+            email: useremail,
+          })
+        );
         if (res.status === 200) {
           // const user = res.data;
           // const accessToken = user.token;
-          console.log(res.data);
+          // console.log(res.data);
           alert("인증번호를 발송하였습니다");
           setRightcode(res.data["authenticationCode"]);
         }
@@ -99,22 +102,26 @@ function SignUp() {
           alert("닉네임은 두 글자 이상이어야 합니다.");
           return;
         }
-        const res = await axios.post("/api/auth/signup", {
-          id: useremail,
-          password: password,
-          name: nickname,
-          phoneNumber: phonenum,
-        });
+        const res = await axios.post(
+          "http://3.37.120.73:8080/api/auth/signup",
+          {
+            email: useremail,
+            password: password,
+            name: nickname,
+            phoneNumber: phonenum,
+          }
+        );
         // 회원가입이 성공한 경우에 대한 처리
         if (res.status === 200) {
           // const user = res.data;
           // const accessToken = user.token;
-          console.log(res.data);
-          alert(res.data["result"]);
+          // console.log(res.data);
+          // alert(res.data["result"]);
           navigate("/login"); //로그인 페이지로 다시 이동
         } else if (res.status === 404) {
           alert("이미 가입된 이메일입니다");
         }
+        navigate("/login");
       } else {
         alert("입력 항목을 다시 확인해주세요");
       }

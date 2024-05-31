@@ -11,8 +11,8 @@ function HomePage() {
   useEffect(() => {
     // 로그인 상태 확인 함수 (여기서는 토큰 유무를 확인)
     const checkLoginStatus = () => {
-      const accessToken = localStorage.getItem("ACCESS_TOKEN");
-      const refreshToken = localStorage.getItem("REFRESH_TOKEN");
+      const accessToken = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
       return accessToken && refreshToken;
     };
 
