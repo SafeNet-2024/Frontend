@@ -147,12 +147,14 @@ function EnrollContent() {
   const navigate = useNavigate();
   const [title, setTitle] = useState(""); // 제목
   const [category, setCategory] = useState(""); // 카테고리
-  const [price, setPrice] = useState(""); // 가격
-  const [capacity, setCapacity] = useState(""); // 용량
+  const [price, setPrice] = useState(0); // 가격
+  const [capacity, setCapacity] = useState(0); // 용량
   const [post, setPost] = useState(""); //글내용
 
+  const [uploadImgFile, setUploadImgFile] = useState(null); // 상품 이미지
+  const [uploadReceiptFile, setUploadReceiptFile] = useState(null); // 영수증 이미지
   const [uploadImgUrl, setUploadImgUrl] = useState(""); // 상품 이미지
-  const [uploadReceipt, setUploadReceipt] = useState(""); // 영수증 이미지
+  const [uploadReceiptUrl, setUploadReceiptUrl] = useState(""); // 영수증 이미지
 
   const [activeSection, setActiveSection] = useState("");
   const [nowDate, setNowDate] = useState("날짜");
@@ -166,13 +168,13 @@ function EnrollContent() {
       title.trim() &&
       category &&
       !isNaN(price) &&
-      price.trim() &&
+      price > 0 &&
       !isNaN(capacity) &&
-      capacity.trim() &&
+      capacity > 0 &&
       post.trim() &&
       nowDate !== "날짜" &&
-      uploadImgUrl.trim() &&
-      uploadReceipt.trim()
+      uploadImgFile &&
+      uploadReceiptFile
     );
     setIsButtonDisabled(isButtonDisabled);
   }, [
@@ -182,8 +184,8 @@ function EnrollContent() {
     capacity,
     post,
     nowDate,
-    uploadImgUrl,
-    uploadReceipt,
+    uploadImgFile,
+    uploadReceiptFile,
   ]);
 
   const handleGoBack = () => {
@@ -211,10 +213,12 @@ function EnrollContent() {
   const handleImgUpload = (e) => {
     const { files } = e.target;
     if (files.length === 0) {
+      setUploadImgFile(null);
       setUploadImgUrl("");
       return;
     }
     const uploadFile = files[0];
+    setUploadImgFile(uploadFile);
     const reader = new FileReader();
     reader.readAsDataURL(uploadFile);
     reader.onloadend = () => {
@@ -225,34 +229,34 @@ function EnrollContent() {
   const handleReceiptUpload = (e) => {
     const { files } = e.target;
     if (files.length === 0) {
-      setUploadReceipt("");
+      setUploadReceiptFile(null);
+      setUploadReceiptUrl("");
       return;
     }
     const uploadFile = files[0];
+    setUploadReceiptFile(uploadFile);
     const reader = new FileReader();
     reader.readAsDataURL(uploadFile);
     reader.onloadend = () => {
-      setUploadReceipt(reader.result);
+      setUploadReceiptUrl(reader.result);
     };
   };
 
   // 등록 버튼 클릭 시
   const handleEnroll = async () => {
     const formData = new FormData();
+    const data = {
+      category: category,
+      title: title,
+      cost: Number(price),
+      count: Number(capacity),
+      buyDate: nowDate,
+      contents: post,
+    };
 
-    formData.append(
-      "post",
-      JSON.stringify({
-        category: category,
-        title: title,
-        cost: price,
-        count: capacity,
-        buyDate: nowDate,
-        contents: post,
-      })
-    );
-    formData.append("receiptImage", uploadReceipt);
-    formData.append("productImage", uploadImgUrl);
+    formData.append("post", JSON.stringify(data));
+    formData.append("receiptImage", uploadReceiptFile);
+    formData.append("productImage", uploadImgFile);
 
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
@@ -264,13 +268,20 @@ function EnrollContent() {
     };
 
     try {
-      await axios.post("/api/v1/posts", formData, {
-        headers: headers,
-      });
-      alert("게시글이 등록되었습니다");
-      navigate("/");
+      const res = await axios.post(
+        "http://3.37.120.73:8080/api/v2/posts",
+        formData,
+        {
+          headers: headers,
+        }
+      );
+      if (res.status === 201) {
+        alert("게시글이 등록되었습니다");
+        navigate("/");
+      }
     } catch (error) {
       alert(error.data || "게시글 등록에 실패했습니다");
+      console.error("상품 등록 실패:", error);
     }
 
     // axios
@@ -287,7 +298,7 @@ function EnrollContent() {
     //     console.error("상품 등록 오류: ", error);
     //   });
 
-    navigate("/"); // 메인 페이지로 이동
+    // navigate("/"); // 메인 페이지로 이동
   };
 
   return (
@@ -367,7 +378,7 @@ function EnrollContent() {
               <div style={{ marginTop: "15px" }}>
                 <img
                   style={{ width: "90px", height: "90px" }}
-                  src={uploadReceipt}
+                  src={uploadReceiptUrl}
                   img="img"
                 />
               </div>

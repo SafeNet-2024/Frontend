@@ -59,14 +59,13 @@ function Login() {
         if (res.status === 200) {
           // const user = res.data;
           // const accessToken = user.token;
-          console.log(res.data);
+          // console.log(res.data);
 
           // 토큰 저장
           localStorage.setItem("accessToken", res.data["accessToken"]);
           localStorage.setItem("refreshToken", res.data["refreshToken"]);
           navigate("/"); // 로그인 성공 시 대시보드 페이지로 이동
         }
-        navigate("/");
       }
     } catch (error) {
       // 로그인이 실패한 경우에 대한 처리
