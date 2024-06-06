@@ -269,7 +269,7 @@ function EnrollContent() {
 
     try {
       const res = await axios.post(
-        "http://3.37.120.73:8080/api/v2/posts",
+        "http://3.37.120.73:8080/api/v3/posts",
         formData,
         {
           headers: headers,
@@ -277,6 +277,7 @@ function EnrollContent() {
       );
       if (res.status === 201) {
         alert("게시글이 등록되었습니다");
+        console.log(res);
         navigate("/");
       }
     } catch (error) {

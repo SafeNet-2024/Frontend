@@ -163,7 +163,8 @@ function Content() {
       try {
         // axios를 사용하여 서버에서 데이터 가져오기
         const response = await axios.get(
-          "http://3.37.120.73:8080/api/v2/posts"
+          "http://3.37.120.73:8080/api/v3/posts",
+          { headers: headers }
         );
         console.log(response);
         setProducts(response.data); // 가져온 데이터를 state에 저장
@@ -194,6 +195,14 @@ function Content() {
 
   // 검색어 이벤트 처리
   const handleSearch = async (event) => {
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    const headers = {
+      ACCESS_TOKEN: `Bearer ${accessToken}`,
+      REFRESH_TOKEN: refreshToken,
+    };
+
     setSearchValue(event.target.value);
     if (event.key === "Enter") {
       try {
@@ -202,7 +211,8 @@ function Content() {
         const keyword = searchValue;
         // axios를 사용하여 서버에서 데이터 가져오기
         const response = await axios.get(
-          `http://3.37.120.73:8080/api/v1/posts/keyword?keyword=${keyword}`
+          `http://3.37.120.73:8080/api/v3/posts/keyword?keyword=${keyword}`,
+          { headers: headers }
         );
         console.log(response);
         setProducts(response.data);
@@ -226,32 +236,29 @@ function Content() {
     try {
       const res = await axios.post(
         `http://3.37.120.73:8080/api/v2/posts/${postId}/like`,
-        {
-          headers: headers,
-        }
+        { headers: headers }
       );
       if (res.status === 200) {
         console.log(res);
+        const updatedProducts = [...products];
+        product.likedByCurrentUser = !product.likedByCurrentUser;
+        setProducts(updatedProducts);
+        console.log(products);
       }
     } catch (error) {
       console.error("찜 실패:", error);
     }
     // products 배열을 복제하여 새로운 배열 생성
-    const updatedProducts = [...products];
     // 해당 상품의 좋아요 상태를 반전시킴
     // if (product.likeCount === 1) {
     //   product.likeCount = 0;
     // } else {
     //   product.likeCount = 1;
     // }
-
     // const updatedProducts = products.map((p) =>
     //   p.postId === product.postId ? { ...p, likeCount: p.likeCount ? 0 : 1 } : p
     // );
-    product.likeCount = !product.likeCount;
     // 상품 상태 업데이트
-    setProducts(updatedProducts);
-    console.log(products);
   };
 
   //더보기 버튼 클릭 시
@@ -259,11 +266,10 @@ function Content() {
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
 
-    // const headers = {
-    //   "Content-Type": "multipart/form-data",
-    //   ACCESS_TOKEN: `Bearer ${accessToken}`,
-    //   REFRESH_TOKEN: refreshToken,
-    // };
+    const headers = {
+      ACCESS_TOKEN: `Bearer ${accessToken}`,
+      REFRESH_TOKEN: refreshToken,
+    };
 
     // try {
     //   // axios를 사용하여 서버에서 데이터 가져오기
@@ -280,7 +286,8 @@ function Content() {
     try {
       // axios를 사용하여 서버에서 데이터 가져오기
       const response = await axios.get(
-        `http://3.37.120.73:8080/api/v2/posts/${postId}`
+        `http://3.37.120.73:8080/api/v3/posts/${postId}`,
+        { headers: headers }
       );
       console.log(response);
       setSelectedProduct(response.data);
@@ -391,7 +398,7 @@ function Content() {
                 onClick={() => handleLike(product)}
               >
                 <LikeImg
-                  src={product.likeCount ? like_red : like_empty}
+                  src={product.likedByCurrentUser ? like_red : like_empty}
                 ></LikeImg>
               </LikeButton>
               <Button
@@ -435,7 +442,7 @@ function Content() {
                   <Line />
                   <div
                     className="category_item"
-                    style={{ width: "25px", padding: "5px 10px" }}
+                    style={{ width: "37px", padding: "5px 10px" }}
                   >
                     {selectedProduct && selectedProduct.category}
                   </div>
