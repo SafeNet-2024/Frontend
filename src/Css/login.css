@@ -98,3 +98,55 @@ label {
   font-size: 14px;
   font-weight: 600;
 }
+
+.postcode_input {
+  width: 200px;
+  height: 35px;
+  background-color: #eaf0f7;
+  border: 1px solid #dcdcdc;
+  border-radius: 5px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.address_input {
+  width: 300px;
+  height: 35px;
+  background-color: #eaf0f7;
+  border: 1px solid #dcdcdc;
+  border-radius: 5px;
+  margin-top: 15px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.address_btn {
+  width: 90px;
+  height: 35px;
+  cursor: pointer;
+  background-color: white;
+  border-radius: 5px;
+  border: 1px solid #dcdcdc;
+  font-size: 14px;
+  font-weight: 600;
+  margin-left: 10px;
+}
+
+.save_btn {
+  width: 310px;
+  height: 40px;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.save_btn input {
+  width: 310px;
+  height: 40px;
+  cursor: pointer;
+  background-color: #4461f2;
+  border-radius: 5px;
+  border: none;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+}

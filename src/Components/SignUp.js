@@ -117,11 +117,14 @@ function SignUp() {
           // const accessToken = user.token;
           // console.log(res.data);
           // alert(res.data["result"]);
-          navigate("/login"); //로그인 페이지로 다시 이동
+          alert("회원가입에 성공하였습니다");
+          // 토큰 저장
+          localStorage.setItem("ACCESS_TOKEN", res.data["accessToken"]);
+          localStorage.setItem("REFRESH_TOKEN", res.data["refreshToken"]);
+          navigate("/address"); //위치설정 페이지로 이동
         } else if (res.status === 404) {
           alert("이미 가입된 이메일입니다");
         }
-        navigate("/login");
       } else {
         alert("입력 항목을 다시 확인해주세요");
       }

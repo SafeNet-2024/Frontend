@@ -6,6 +6,7 @@ import ex_img from "../Assets/ex_img.png";
 import like_red from "../Assets/like_red.png";
 import like_empty from "../Assets/like_empty.png";
 import close from "../Assets/close.png";
+import "../Css/searchbar.css";
 
 const ContentWrapper = styled.div`
   width: auto;
@@ -146,55 +147,118 @@ function Content() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [receiverName, setReceiverName] = useState(null);
   const [postId, setPostId] = useState(null);
+  const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
-    // // 서버에서 데이터를 가져오는 비동기 함수
-    // const fetchProducts = async () => {
+    // 서버에서 데이터를 가져오는 비동기 함수
+    const fetchProducts = async () => {
+      const accessToken = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
 
-    // const accessToken = localStorage.getItem("accessToken");
-    // const refreshToken = localStorage.getItem("refreshToken");
+      const headers = {
+        ACCESS_TOKEN: `Bearer ${accessToken}`,
+        REFRESH_TOKEN: refreshToken,
+      };
 
-    // const headers = {
-    //   "Content-Type": "multipart/form-data",
-    //   ACCESS_TOKEN: `Bearer ${accessToken}`,
-    //   REFRESH_TOKEN: refreshToken,
-    // };
+      try {
+        // axios를 사용하여 서버에서 데이터 가져오기
+        const response = await axios.get(
+          "http://3.37.120.73:8080/api/v3/posts",
+          { headers: headers }
+        );
+        console.log(response);
+        setProducts(response.data); // 가져온 데이터를 state에 저장
+      } catch (error) {
+        console.error("데이터를 가져오는 중 에러 발생:", error);
+      }
+    };
 
-    //   try {
-    //     // axios를 사용하여 서버에서 데이터 가져오기
-    //     const response = await axios.get("/api/v1/posts", {headers: headers});
-    //     setProducts(response.data); // 가져온 데이터를 state에 저장
-    //   } catch (error) {
-    //     console.error("데이터를 가져오는 중 에러 발생:", error);
-    //   }
-    // };
+    fetchProducts();
 
     // 임시 상품 데이터 생성 함수
-    const createTempProduct = (id) => ({
-      postId,
-      likeCount: 0,
-      imageUrl: ex_img,
-      title: "파 한 단 가져가실 분",
-      count: 3,
-      cost: 2000,
-      liked: false,
-    });
+    // const createTempProduct = (id) => ({
+    //   postId,
+    //   likeCount: 0,
+    //   imageUrl: ex_img,
+    //   title: "파 한 단 가져가실 분",
+    //   count: 3,
+    //   cost: 2000,
+    //   liked: false,
+    // });
 
-    // 상품 데이터를 products에 저장
-    setProducts(Array.from({ length: 6 }, (_, index) => createTempProduct()));
+    // // 상품 데이터를 products에 저장
+    // setProducts(Array.from({ length: 6 }, (_, index) => createTempProduct()));
 
     // // 컴포넌트가 마운트되었을 때 데이터를 가져오도록 호출
     // fetchProducts();
   }, []); // 빈 배열을 전달하여 최초 한 번만 실행되도록 설정
 
+  // 검색어 이벤트 처리
+  const handleSearch = async (event) => {
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    const headers = {
+      ACCESS_TOKEN: `Bearer ${accessToken}`,
+      REFRESH_TOKEN: refreshToken,
+    };
+
+    setSearchValue(event.target.value);
+    if (event.key === "Enter") {
+      try {
+        // 엔터 키가 눌렸을 때의 동작 수행
+        console.log(searchValue, "를 검색합니다.");
+        const keyword = searchValue;
+        // axios를 사용하여 서버에서 데이터 가져오기
+        const response = await axios.get(
+          `http://3.37.120.73:8080/api/v3/posts/keyword?keyword=${keyword}`,
+          { headers: headers }
+        );
+        console.log(response);
+        setProducts(response.data);
+      } catch (error) {
+        console.error("데이터를 가져오는 중 에러 발생:", error);
+      }
+    }
+  };
+
   // 찜버튼 클릭 시
-  const handleLike = (productIndex) => {
+  const handleLike = async (product) => {
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+    const postId = product.postId;
+
+    const headers = {
+      ACCESS_TOKEN: `Bearer ${accessToken}`,
+      REFRESH_TOKEN: refreshToken,
+    };
+
+    try {
+      const res = await axios.post(
+        `http://3.37.120.73:8080/api/v2/posts/${postId}/like`,
+        { headers: headers }
+      );
+      if (res.status === 200) {
+        console.log(res);
+        const updatedProducts = [...products];
+        product.likedByCurrentUser = !product.likedByCurrentUser;
+        setProducts(updatedProducts);
+        console.log(products);
+      }
+    } catch (error) {
+      console.error("찜 실패:", error);
+    }
     // products 배열을 복제하여 새로운 배열 생성
-    const updatedProducts = [...products];
     // 해당 상품의 좋아요 상태를 반전시킴
-    updatedProducts[productIndex].liked = !updatedProducts[productIndex].liked;
+    // if (product.likeCount === 1) {
+    //   product.likeCount = 0;
+    // } else {
+    //   product.likeCount = 1;
+    // }
+    // const updatedProducts = products.map((p) =>
+    //   p.postId === product.postId ? { ...p, likeCount: p.likeCount ? 0 : 1 } : p
+    // );
     // 상품 상태 업데이트
-    setProducts(updatedProducts);
   };
 
   //더보기 버튼 클릭 시
@@ -202,11 +266,10 @@ function Content() {
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
 
-    // const headers = {
-    //   "Content-Type": "multipart/form-data",
-    //   ACCESS_TOKEN: `Bearer ${accessToken}`,
-    //   REFRESH_TOKEN: refreshToken,
-    // };
+    const headers = {
+      ACCESS_TOKEN: `Bearer ${accessToken}`,
+      REFRESH_TOKEN: refreshToken,
+    };
 
     // try {
     //   // axios를 사용하여 서버에서 데이터 가져오기
@@ -218,9 +281,20 @@ function Content() {
     // } catch (error) {
     //   console.error("데이터를 가져오는 중 에러 발생:", error);
     // }
+    const postId = product.postId;
 
-    setSelectedProduct(product);
-    setIsModalOpen(true);
+    try {
+      // axios를 사용하여 서버에서 데이터 가져오기
+      const response = await axios.get(
+        `http://3.37.120.73:8080/api/v3/posts/${postId}`,
+        { headers: headers }
+      );
+      console.log(response);
+      setSelectedProduct(response.data);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("데이터를 가져오는 중 에러 발생:", error);
+    }
   };
 
   // const checkChatroomExistence = async (roomId) => {
@@ -298,22 +372,34 @@ function Content() {
 
   return (
     <>
+      <div className="searchContainer">
+        <input
+          className="searchbar"
+          type="search"
+          placeholder="원하는 식재료 검색"
+          value={searchValue}
+          onChange={handleSearch}
+          onKeyPress={handleSearch}
+        />
+      </div>
       <ContentWrapper>
         <Contents>우리 동네 식재료</Contents>
       </ContentWrapper>
       <ProductList>
         {/* 서버에서 가져온 데이터를 반복하여 각각의 상품을 표시 */}
-        {products.map((product, index) => (
+        {(products || []).map((product, index) => (
           <Product key={product.postId}>
-            <ProductImage src={product.imageUrl} />
+            <ProductImage src={product.productImageUrl} />
             <div>{product.title}</div>
             <div>
               <LikeButton
                 className="like_btn"
                 type="button"
-                onClick={() => handleLike(index)}
+                onClick={() => handleLike(product)}
               >
-                <LikeImg src={product.liked ? like_red : like_empty}></LikeImg>
+                <LikeImg
+                  src={product.likedByCurrentUser ? like_red : like_empty}
+                ></LikeImg>
               </LikeButton>
               <Button
                 className="more_btn"
@@ -334,18 +420,29 @@ function Content() {
             </CloseBtn>
           </div>
           <div style={{ display: "flex" }}>
-            <ModalImg src={selectedProduct && selectedProduct.imageUrl} />
+            <ModalImg
+              src={selectedProduct && selectedProduct.productImageUrl}
+            />
             <div style={{ marginLeft: "15px" }}>
               <ModalPost>
                 <div>
                   <h3>{selectedProduct && selectedProduct.title}</h3>
-                  <div>{selectedProduct && selectedProduct.writer}</div>
+                  <div
+                    style={{
+                      fontSize: "13px",
+                      color: "gray",
+                      marginBottom: "5px",
+                    }}
+                  >
+                    작성자:
+                    {selectedProduct && selectedProduct.writer}
+                  </div>
                   <Line />
                   <p>{selectedProduct && selectedProduct.contents}</p>
                   <Line />
                   <div
                     className="category_item"
-                    style={{ width: "25px", padding: "5px 10px" }}
+                    style={{ width: "37px", padding: "5px 10px" }}
                   >
                     {selectedProduct && selectedProduct.category}
                   </div>
@@ -359,6 +456,7 @@ function Content() {
           </div>
         </ModalContent>
       </Modal>
+      ​
     </>
   );
 }
