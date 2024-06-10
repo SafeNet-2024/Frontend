@@ -94,7 +94,7 @@ const CloseBtn = styled.div`
 const ModalContent = styled.div`
   position: absolute;
   width: 700px;
-  height: 350px;
+  height: 400px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -108,12 +108,12 @@ const ModalContent = styled.div`
 const ModalImg = styled.img`
   border-radius: 10px;
   width: 350px;
-  height: 300px;
+  height: 330px;
 `;
 
 const ModalPost = styled.div`
   width: 300px;
-  height: 200px;
+  height: 230px;
   background-color: white;
   padding: 20px;
   margin-bottom: 15px;
@@ -148,13 +148,12 @@ function Content() {
   const [receiverName, setReceiverName] = useState(null);
   const [postId, setPostId] = useState(null);
   const [searchValue, setSearchValue] = useState("");
+  const accessToken = localStorage.getItem("accessToken");
+  const refreshToken = localStorage.getItem("refreshToken");
 
   useEffect(() => {
     // 서버에서 데이터를 가져오는 비동기 함수
     const fetchProducts = async () => {
-      const accessToken = localStorage.getItem("accessToken");
-      const refreshToken = localStorage.getItem("refreshToken");
-
       const headers = {
         ACCESS_TOKEN: `Bearer ${accessToken}`,
         REFRESH_TOKEN: refreshToken,
@@ -173,7 +172,9 @@ function Content() {
       }
     };
 
-    fetchProducts();
+    if (accessToken) {
+      fetchProducts();
+    }
 
     // 임시 상품 데이터 생성 함수
     // const createTempProduct = (id) => ({
@@ -236,6 +237,7 @@ function Content() {
     try {
       const res = await axios.post(
         `http://3.37.120.73:8080/api/v2/posts/${postId}/like`,
+        null,
         { headers: headers }
       );
       if (res.status === 200) {
@@ -348,9 +350,9 @@ function Content() {
   // 채팅하기 버튼 클릭 시
   const handleChatting = async () => {
     if (selectedProduct) {
-      const { postId, writer } = selectedProduct;
+      const postId = selectedProduct.postId;
+      navigate("/chatting", { state: { postId } });
     }
-    navigate("/chatting");
     // try {
     //   // 채팅방이 있는지 확인
     //   const existingRoomDTO = await checkChatroomExistence(roomId);
@@ -442,11 +444,17 @@ function Content() {
                   <Line />
                   <div
                     className="category_item"
-                    style={{ width: "37px", padding: "5px 10px" }}
+                    style={{ width: "37px", padding: "5px 7px" }}
                   >
                     {selectedProduct && selectedProduct.category}
                   </div>
-                  <div style={{ float: "right", fontWeight: "bold" }}>
+                  <div
+                    style={{
+                      float: "right",
+                      fontWeight: "bold",
+                      marginBottom: "10px",
+                    }}
+                  >
                     {selectedProduct && selectedProduct.cost}원
                   </div>
                 </div>

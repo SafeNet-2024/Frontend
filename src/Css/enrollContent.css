@@ -34,6 +34,7 @@
   letter-spacing: -0.2px;
   margin-right: 9px;
   filter: drop-shadow(rgba(0, 0, 0, 0.08) 0px 1px 1px);
+  text-align: center;
 }
 
 .category_item:hover {

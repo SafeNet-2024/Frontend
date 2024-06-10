@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import logo from "../Assets/logo.png";
@@ -71,7 +72,33 @@ function Topbar() {
   };
 
   // 로그아웃 버튼 클릭 시 실행될 함수
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    const headers = {
+      ACCESS_TOKEN: `Bearer ${accessToken}`,
+      REFRESH_TOKEN: refreshToken,
+    };
+
+    try {
+      const res = await axios.post(
+        "http://3.37.120.73:8080/api/auth/logout",
+        null,
+        {
+          headers: headers,
+        }
+      );
+      if (res.status === 200) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        console.log(res);
+        navigate("/login");
+        alert("로그아웃이 완료되었습니다");
+      }
+    } catch (error) {
+      console.error("로그아웃 실패:", error);
+    }
     // 여기에 로그아웃에 대한 동작을 추가하세요
     // axios.get(`/api/users/logout`).then((response) => {
     //   if (response.data.success) {
@@ -80,8 +107,8 @@ function Topbar() {
     //     alert("로그아웃에 실패했습니다");
     //   }
     // });
-    alert("로그아웃하였습니다.");
-    navigate("/login");
+    // alert("로그아웃하였습니다.");
+    // navigate("/login");
   };
 
   // 마이페이지 버튼 클릭 시 실행될 함수

@@ -1,22 +1,93 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Link, json } from "react-router-dom";
+import { Link, json, useLocation } from "react-router-dom";
 import Topbar from "../Components/Topbar.js";
+import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
+import "../Css/chatting.css";
 
 function ChatPage() {
+  const location = useLocation();
+  const { postId } = location.state || {};
   const stompClient = useRef(null);
   const [messages, setMessages] = new useState([]);
   const [inputValue, setInputValue] = new useState("");
+  const [chatrooms, setChatrooms] = useState([]);
+  const [roomId, setRoomId] = useState("");
+  const [sender, setSender] = useState("");
+
+  useEffect(() => {
+    // 서버에서 데이터를 가져오는 비동기 함수
+    const fetchChatting = async () => {
+      const accessToken = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
+
+      const headers = {
+        ACCESS_TOKEN: `Bearer ${accessToken}`,
+        REFRESH_TOKEN: refreshToken,
+      };
+
+      if (postId) {
+        try {
+          // 채팅방 생성 or 기존 채팅방 불러오기
+          const response = await axios.post(
+            `http://3.37.120.73:8080/api/v2/posts/${Number(postId)}/rooms`,
+            null,
+            { headers: headers }
+          );
+          setRoomId(response.data["roomId"]);
+          console.log(response);
+        } catch (error) {
+          console.error("데이터를 가져오는 중 에러 발생:", error);
+        }
+      }
+
+      try {
+        // 채팅방 리스트 불러오기
+        const res = await axios.get("http://3.37.120.73:8080/api/v2/rooms", {
+          headers: headers,
+        });
+        setChatrooms(res.data); // 채팅방 리스트 상태 업데이트
+
+        const existingRoom = res.data.find((room) => room.roomId === roomId);
+        if (existingRoom) {
+          setSender(existingRoom["sender"]);
+        }
+        console.log(res.data);
+      } catch (error) {
+        console.error("데이터를 가져오는 중 에러 발생:", error);
+      }
+
+      if (roomId) {
+        try {
+          // 채팅방 메세지 불러오기
+          const res2 = await axios.get(
+            `http://3.37.120.73:8080/api/rooms/${roomId}/message`,
+            { headers: headers }
+          );
+          setMessages(res2.data);
+          console.log(res2);
+        } catch (error) {
+          console.error("데이터를 가져오는 중 에러 발생:", error);
+        }
+      }
+    };
+
+    fetchChatting();
+    connect();
+
+    return () => disconnect();
+  }, [postId, roomId]);
+
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
   };
 
   const connect = () => {
-    const socket = new WebSocket("ws://localhost:8080/ws");
+    const socket = new SockJS("http://3.37.120.73:8080/ws-stomp");
     stompClient.current = Stomp.over(socket);
     stompClient.current.connect({}, () => {
-      stompClient.current.subscribe(`/sub/chatroom`, (message) => {
+      stompClient.current.subscribe(`/sub/chat/room/${roomId}`, (message) => {
         const newMessage = JSON.parse(message.body);
         setMessages((prevMessages) => [...prevMessages, newMessage]);
       });
@@ -36,8 +107,22 @@ function ChatPage() {
   // }, []);
 
   const sendMessage = () => {
-    if (stompClient.current && inputValue) {
-      const body = {};
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    const headers = {
+      ACCESS_TOKEN: `Bearer ${accessToken}`,
+      REFRESH_TOKEN: refreshToken,
+    };
+
+    if (stompClient.current && stompClient.current.connected && inputValue) {
+      const body = { sender: sender, roomId: roomId, message: inputValue };
+      stompClient.current.send(
+        "/pub/chat/message",
+        headers,
+        JSON.stringify(body)
+      );
+      setInputValue(""); // 메시지 전송 후 입력값 초기화
     }
   };
   // const el = "#app";
@@ -100,20 +185,39 @@ function ChatPage() {
   // };
 
   return (
-    <div className="container">
+    <>
       <Topbar />
-      <ul>
-        <div>
-          <input type="text" value={inputValue} onChange={handleInputChange} />
-          <button onClick={sendMessage}>입력</button>
-        </div>
-        {messages.map((item, index) => (
-          <div key={index} className="list-item">
-            {item.message}
+      <div className="container">
+        <div className="chat-container">
+          <div className="chatroom-list">
+            <h2>Chat Rooms</h2>
+            <ul>
+              {chatrooms.map((room, index) => (
+                <li key={index}>
+                  {room.receiver}
+                  <Link to={`/chat/room/${room.id}`}>{room.name}</Link>
+                </li>
+              ))}
+            </ul>
           </div>
-        ))}
-      </ul>
-    </div>
+          <div className="chat-content">
+            {(messages || []).map((item, index) => (
+              <div key={index} className="list-item">
+                {item.message}
+              </div>
+            ))}
+            <div>
+              <input
+                type="text"
+                value={inputValue}
+                onChange={handleInputChange}
+              />
+              <button onClick={sendMessage}>전송</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
