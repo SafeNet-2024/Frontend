@@ -131,13 +131,14 @@ const Line = styled.div`
 
 const ChatBtn = styled.button`
   width: 100%;
-  background-color: #4461f2;
+  background-color: ${({ disabled }) => (disabled ? "#ccc" : "#4461f2")};
   border: none;
   height: 40px;
   font-size: 15px;
   font-weight: bold;
   color: white;
   border-radius: 5px;
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
 `;
 
 function Content() {
@@ -166,7 +167,9 @@ function Content() {
           { headers: headers }
         );
         console.log(response);
-        setProducts(response.data); // 가져온 데이터를 state에 저장
+        if (response.data !== "등록된 게시물이 없습니다.") {
+          setProducts(response.data); // 가져온 데이터를 state에 저장
+        }
       } catch (error) {
         console.error("데이터를 가져오는 중 에러 발생:", error);
       }
@@ -234,21 +237,23 @@ function Content() {
       REFRESH_TOKEN: refreshToken,
     };
 
-    try {
-      const res = await axios.post(
-        `http://3.37.120.73:8080/api/v2/posts/${postId}/like`,
-        null,
-        { headers: headers }
-      );
-      if (res.status === 200) {
-        console.log(res);
-        const updatedProducts = [...products];
-        product.likedByCurrentUser = !product.likedByCurrentUser;
-        setProducts(updatedProducts);
-        console.log(products);
+    if (!product.mine) {
+      try {
+        const res = await axios.post(
+          `http://3.37.120.73:8080/api/v2/posts/${postId}/like`,
+          null,
+          { headers: headers }
+        );
+        if (res.status === 200) {
+          console.log(res);
+          const updatedProducts = [...products];
+          product.likedByCurrentUser = !product.likedByCurrentUser;
+          setProducts(updatedProducts);
+          console.log(products);
+        }
+      } catch (error) {
+        console.error("찜 실패:", error);
       }
-    } catch (error) {
-      console.error("찜 실패:", error);
     }
     // products 배열을 복제하여 새로운 배열 생성
     // 해당 상품의 좋아요 상태를 반전시킴
@@ -399,9 +404,13 @@ function Content() {
                 type="button"
                 onClick={() => handleLike(product)}
               >
-                <LikeImg
-                  src={product.likedByCurrentUser ? like_red : like_empty}
-                ></LikeImg>
+                {" "}
+                {!product.mine && (
+                  <LikeImg
+                    src={product.likedByCurrentUser ? like_red : like_empty}
+                    alt="like"
+                  />
+                )}
               </LikeButton>
               <Button
                 className="more_btn"
@@ -459,7 +468,12 @@ function Content() {
                   </div>
                 </div>
               </ModalPost>
-              <ChatBtn onClick={handleChatting}>판매자와 채팅하기</ChatBtn>
+              <ChatBtn
+                onClick={handleChatting}
+                disabled={selectedProduct && selectedProduct.mine}
+              >
+                판매자와 채팅하기
+              </ChatBtn>
             </div>
           </div>
         </ModalContent>

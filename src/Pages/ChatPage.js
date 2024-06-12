@@ -1,12 +1,38 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Link, json, useLocation } from "react-router-dom";
+import { Link, json, useLocation, useNavigate } from "react-router-dom";
+import styled from "styled-components";
 import Topbar from "../Components/Topbar.js";
 import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
 import "../Css/chatting.css";
 
+const Line = styled.div`
+  width: 300px;
+  border-top: 2px solid #eee;
+  margin-top: 20px;
+  margin-bottom: 10px;
+`;
+
+const Message = styled.div`
+  display: flex;
+  justify-content: ${({ isCurrentUser }) =>
+    isCurrentUser ? "flex-end" : "flex-start"};
+  margin-bottom: 10px;
+`;
+
+const MessageBubble = styled.div`
+  background-color: ${({ isCurrentUser }) =>
+    isCurrentUser ? "#4461f2" : "#e0e0e0"};
+  color: ${({ isCurrentUser }) => (isCurrentUser ? "white" : "black")};
+  padding: 10px;
+  border-radius: 15px;
+  max-width: 60%;
+  word-wrap: break-word;
+`;
+
 function ChatPage() {
+  const navigate = useNavigate();
   const location = useLocation();
   const { postId } = location.state || {};
   const stompClient = useRef(null);
@@ -17,11 +43,20 @@ function ChatPage() {
   const [sender, setSender] = useState("");
 
   useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    // 로그인 상태 확인 함수 (여기서는 토큰 유무를 확인)
+    const checkLoginStatus = () => {
+      return accessToken && refreshToken;
+    };
+
+    if (!checkLoginStatus()) {
+      navigate("/login"); // 로그인되지 않은 경우 로그인 페이지로 이동
+    }
+
     // 서버에서 데이터를 가져오는 비동기 함수
     const fetchChatting = async () => {
-      const accessToken = localStorage.getItem("accessToken");
-      const refreshToken = localStorage.getItem("refreshToken");
-
       const headers = {
         ACCESS_TOKEN: `Bearer ${accessToken}`,
         REFRESH_TOKEN: refreshToken,
@@ -48,12 +83,22 @@ function ChatPage() {
           headers: headers,
         });
         setChatrooms(res.data); // 채팅방 리스트 상태 업데이트
-
-        const existingRoom = res.data.find((room) => room.roomId === roomId);
-        if (existingRoom) {
-          setSender(existingRoom["sender"]);
-        }
         console.log(res.data);
+
+        // const existingRoom = res.data.find((room) => room.roomId === roomId);
+        // if (existingRoom) {
+        //   setSender(existingRoom["sender"]);
+        // }
+        if (res.status === 200 && res.data.length !== 0) {
+          if (res.data[0]["roomName"] === res.data[0]["receiver"]) {
+            setSender(res.data[0]["sender"]);
+          } else {
+            setSender(res.data[0]["receiver"]);
+          }
+          console.log(sender);
+          // setSender(chatrooms[0].sender);
+          // console.log(sender);
+        }
       } catch (error) {
         console.error("데이터를 가져오는 중 에러 발생:", error);
       }
@@ -77,21 +122,38 @@ function ChatPage() {
     connect();
 
     return () => disconnect();
-  }, [postId, roomId]);
+  }, [postId, roomId, navigate]);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
   };
 
   const connect = () => {
+    const accessToken = localStorage.getItem("accessToken");
+
     const socket = new SockJS("http://3.37.120.73:8080/ws-stomp");
     stompClient.current = Stomp.over(socket);
-    stompClient.current.connect({}, () => {
-      stompClient.current.subscribe(`/sub/chat/room/${roomId}`, (message) => {
-        const newMessage = JSON.parse(message.body);
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
-      });
-    });
+    stompClient.current.connect(
+      { ACCESS_TOKEN: `Bearer ${accessToken}` },
+      () => {
+        if (roomId) {
+          stompClient.current.subscribe(
+            `/sub/chat/room/${roomId}`,
+            (message) => {
+              const newMessage = JSON.parse(message.body);
+              setMessages((prevMessages) => [...prevMessages, newMessage]);
+            },
+            {
+              ACCESS_TOKEN: `Bearer ${accessToken}`,
+            }
+          );
+        }
+      },
+      (error) => {
+        console.error("웹소켓 연결 중 에러 발생:", error);
+        // reconnect();
+      }
+    );
   };
 
   const disconnect = () => {
@@ -99,6 +161,13 @@ function ChatPage() {
       stompClient.current.disconnect();
     }
   };
+
+  // const reconnect = () => {
+  //   setTimeout(() => {
+  //     console.log("웹소켓 재연결 시도 중...");
+  //     connect();
+  //   }, 5000); // 5초 후에 재연결 시도
+  // };
 
   // useEffect(() => {
   //   connect();
@@ -112,18 +181,28 @@ function ChatPage() {
 
     const headers = {
       ACCESS_TOKEN: `Bearer ${accessToken}`,
-      REFRESH_TOKEN: refreshToken,
     };
 
-    if (stompClient.current && stompClient.current.connected && inputValue) {
+    if (
+      stompClient.current &&
+      stompClient.current.connected &&
+      inputValue &&
+      roomId
+    ) {
       const body = { sender: sender, roomId: roomId, message: inputValue };
-      stompClient.current.send(
-        "/pub/chat/message",
-        headers,
-        JSON.stringify(body)
-      );
+      stompClient.current.send("/pub/chat/message", {}, JSON.stringify(body));
       setInputValue(""); // 메시지 전송 후 입력값 초기화
     }
+  };
+
+  const handleRoomClick = (room) => {
+    setRoomId(room.roomId);
+    if (room.roomName === room.receiver) {
+      setSender(room.sender);
+    } else {
+      setSender(room.receiver);
+    }
+    console.log(sender);
   };
   // const el = "#app";
   // const [room_name, setRoomName] = useState("");
@@ -191,26 +270,40 @@ function ChatPage() {
         <div className="chat-container">
           <div className="chatroom-list">
             <h2>Chat Rooms</h2>
+            <Line></Line>
             <ul>
               {chatrooms.map((room, index) => (
                 <li key={index}>
-                  {room.receiver}
-                  <Link to={`/chat/room/${room.id}`}>{room.name}</Link>
+                  <div
+                    style={{ fontSize: "17px", fontWeight: "bold" }}
+                    onClick={() => handleRoomClick(room)}
+                  >
+                    {room.roomName}
+                  </div>
+                  <div style={{ fontSize: "14px" }}> {room.message}</div>
+                  <Line></Line>
+                  {/* <Link to={`/chat/room/${room.id}`}>{room.name}</Link> */}
                 </li>
               ))}
             </ul>
           </div>
           <div className="chat-content">
             {(messages || []).map((item, index) => (
-              <div key={index} className="list-item">
-                {item.message}
-              </div>
+              <Message key={index} isCurrentUser={item.sender === sender}>
+                <MessageBubble isCurrentUser={item.sender === sender}>
+                  {item.message}
+                </MessageBubble>
+              </Message>
+              // <div key={index} className="list-item">
+              //   {item.message}
+              // </div>
             ))}
             <div>
               <input
                 type="text"
                 value={inputValue}
                 onChange={handleInputChange}
+                placeholder="메시지를 입력하세요"
               />
               <button onClick={sendMessage}>전송</button>
             </div>

@@ -143,6 +143,11 @@ const EnrollButton = styled.button`
 }
 `;
 
+const ReceiptMessage = styled.p`
+  color: ${(props) => (props.isValid ? "green" : "red")};
+  font-size: 12px;
+`;
+
 function EnrollContent() {
   const navigate = useNavigate();
   const [title, setTitle] = useState(""); // 제목
@@ -161,9 +166,21 @@ function EnrollContent() {
   const [dateValue, onChange] = useState(new Date());
   const [isOpen, setIsOpen] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [isReceiptValid, setIsReceiptValid] = useState(false); // 영수증 유효 여부
   const today = new Date();
 
   useEffect(() => {
+    // 로그인 상태 확인 함수 (여기서는 토큰 유무를 확인)
+    const checkLoginStatus = () => {
+      const accessToken = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
+      return accessToken && refreshToken;
+    };
+
+    if (!checkLoginStatus()) {
+      navigate("/login"); // 로그인되지 않은 경우 로그인 페이지로 이동
+    }
+
     const isButtonDisabled = !(
       title.trim() &&
       category &&
@@ -186,6 +203,7 @@ function EnrollContent() {
     nowDate,
     uploadImgFile,
     uploadReceiptFile,
+    navigate,
   ]);
 
   const handleGoBack = () => {
@@ -226,7 +244,7 @@ function EnrollContent() {
     };
   };
 
-  const handleReceiptUpload = (e) => {
+  const handleReceiptUpload = async (e) => {
     const { files } = e.target;
     if (files.length === 0) {
       setUploadReceiptFile(null);
@@ -240,6 +258,30 @@ function EnrollContent() {
     reader.onloadend = () => {
       setUploadReceiptUrl(reader.result);
     };
+
+    try {
+      const formData = new FormData();
+      formData.append("receiptImage", uploadReceiptFile);
+      console.log(formData);
+      const res = await axios.post(
+        "https://f4mib4dy0b.execute-api.ap-northeast-2.amazonaws.com/api/v1/posts/receipt",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      if (res.status === 200) {
+        if (res.data["is_receipt"]) {
+          alert("영수증이 맞습니다");
+          setIsReceiptValid(true);
+        } else {
+          setIsReceiptValid(false);
+          alert("영수증이 아닙니다");
+        }
+        console.log(res);
+      }
+    } catch (error) {
+      alert(error.data || "영수증 등록에 실패했습니다");
+      console.error("영수증 등록 실패:", error);
+    }
   };
 
   // 등록 버튼 클릭 시
@@ -383,6 +425,11 @@ function EnrollContent() {
                   img="img"
                 />
               </div>
+              {isReceiptValid !== null && (
+                <ReceiptMessage isValid={isReceiptValid}>
+                  {isReceiptValid ? "영수증이 맞습니다" : "영수증이 아닙니다"}
+                </ReceiptMessage>
+              )}
               <Label>
                 첨부
                 <input
