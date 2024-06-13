@@ -8,10 +8,9 @@ import { Stomp } from "@stomp/stompjs";
 import "../Css/chatting.css";
 
 const Line = styled.div`
-  width: 300px;
+  width: 100%;
   border-top: 2px solid #eee;
-  margin-top: 20px;
-  margin-bottom: 10px;
+  margin-top: 10px;
 `;
 
 const Message = styled.div`
@@ -31,6 +30,17 @@ const MessageBubble = styled.div`
   word-wrap: break-word;
 `;
 
+const ChatRoomItem = styled.li`
+  padding: 10px;
+  border-radius: 5px;
+  background-color: ${({ isActive }) => (isActive ? "#eee" : "transparent")};
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${({ isActive }) => (isActive ? "#eee" : "#f0f0f0")};
+  }
+`;
+
 function ChatPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,6 +51,7 @@ function ChatPage() {
   const [chatrooms, setChatrooms] = useState([]);
   const [roomId, setRoomId] = useState("");
   const [sender, setSender] = useState("");
+  const [selectedRoomId, setSelectedRoomId] = useState("");
 
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
@@ -71,6 +82,7 @@ function ChatPage() {
             { headers: headers }
           );
           setRoomId(response.data["roomId"]);
+          setSelectedRoomId(response.data["roomId"]);
           console.log(response);
         } catch (error) {
           console.error("데이터를 가져오는 중 에러 발생:", error);
@@ -197,6 +209,7 @@ function ChatPage() {
 
   const handleRoomClick = (room) => {
     setRoomId(room.roomId);
+    setSelectedRoomId(room.roomId);
     if (room.roomName === room.receiver) {
       setSender(room.sender);
     } else {
@@ -273,17 +286,18 @@ function ChatPage() {
             <Line></Line>
             <ul>
               {chatrooms.map((room, index) => (
-                <li key={index}>
-                  <div
-                    style={{ fontSize: "17px", fontWeight: "bold" }}
-                    onClick={() => handleRoomClick(room)}
-                  >
+                <ChatRoomItem
+                  key={index}
+                  isActive={room.roomId === selectedRoomId}
+                  onClick={() => handleRoomClick(room)}
+                >
+                  <div style={{ fontSize: "17px", fontWeight: "bold" }}>
                     {room.roomName}
                   </div>
                   <div style={{ fontSize: "14px" }}> {room.message}</div>
                   <Line></Line>
                   {/* <Link to={`/chat/room/${room.id}`}>{room.name}</Link> */}
-                </li>
+                </ChatRoomItem>
               ))}
             </ul>
           </div>
