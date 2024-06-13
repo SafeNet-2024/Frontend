@@ -304,6 +304,46 @@ function Content() {
     }
   };
 
+  // 거래상태 변경
+  const handleStatusChange = async () => {
+    if (selectedProduct.mine && selectedProduct.postStatus === "거래가능") {
+      const accessToken = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
+      const postId = selectedProduct.postId;
+
+      const headers = {
+        ACCESS_TOKEN: `Bearer ${accessToken}`,
+        REFRESH_TOKEN: refreshToken,
+      };
+
+      try {
+        const res = await axios.patch(
+          `http://3.37.120.73:8080/api/v3/posts/${postId}/status/trading`,
+          null,
+          { headers: headers }
+        );
+        if (res.status === 200) {
+          // const updatedProducts = products.map((p) =>
+          //   p.postId === postId ? { ...p, postStatus: "거래중" } : p
+          // );
+          // setProducts(updatedProducts);
+          console.log(res);
+          const updatedProduct = { ...selectedProduct, postStatus: "거래중" };
+          setSelectedProduct(updatedProduct);
+          setProducts((prevProducts) =>
+            prevProducts.map((product) =>
+              product.postId === postId
+                ? { ...product, postStatus: "거래중" }
+                : product
+            )
+          );
+        }
+      } catch (error) {
+        console.error("상태 변경 실패:", error);
+      }
+    }
+  };
+
   // const checkChatroomExistence = async (roomId) => {
   //   try {
   //     const response = await axios.get(`/api/rooms/${roomId}`, {
@@ -354,6 +394,7 @@ function Content() {
 
   // 채팅하기 버튼 클릭 시
   const handleChatting = async () => {
+    console.log(selectedProduct);
     if (selectedProduct) {
       const postId = selectedProduct.postId;
       navigate("/chatting", { state: { postId } });
@@ -437,6 +478,17 @@ function Content() {
             <div style={{ marginLeft: "15px" }}>
               <ModalPost>
                 <div>
+                  <div
+                    className="category_item"
+                    style={{
+                      width: "50px",
+                      padding: "5px 7px",
+                      float: "right",
+                    }}
+                    onClick={handleStatusChange}
+                  >
+                    {selectedProduct && selectedProduct.postStatus}
+                  </div>
                   <h3>{selectedProduct && selectedProduct.title}</h3>
                   <div
                     style={{
@@ -470,7 +522,11 @@ function Content() {
               </ModalPost>
               <ChatBtn
                 onClick={handleChatting}
-                disabled={selectedProduct && selectedProduct.mine}
+                disabled={
+                  selectedProduct &&
+                  (selectedProduct.mine ||
+                    selectedProduct.postStatus === "거래중")
+                }
               >
                 판매자와 채팅하기
               </ChatBtn>

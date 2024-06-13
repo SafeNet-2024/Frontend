@@ -52,11 +52,14 @@ function ChatPage() {
   const [roomId, setRoomId] = useState("");
   const [sender, setSender] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState("");
+  const accessToken = localStorage.getItem("accessToken");
+  const refreshToken = localStorage.getItem("refreshToken");
+  const headers = {
+    ACCESS_TOKEN: `Bearer ${accessToken}`,
+    REFRESH_TOKEN: refreshToken,
+  };
 
   useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
-
     // 로그인 상태 확인 함수 (여기서는 토큰 유무를 확인)
     const checkLoginStatus = () => {
       return accessToken && refreshToken;
@@ -68,11 +71,6 @@ function ChatPage() {
 
     // 서버에서 데이터를 가져오는 비동기 함수
     const fetchChatting = async () => {
-      const headers = {
-        ACCESS_TOKEN: `Bearer ${accessToken}`,
-        REFRESH_TOKEN: refreshToken,
-      };
-
       if (postId) {
         try {
           // 채팅방 생성 or 기존 채팅방 불러오기
@@ -88,7 +86,24 @@ function ChatPage() {
           console.error("데이터를 가져오는 중 에러 발생:", error);
         }
       }
+    };
 
+    if (checkLoginStatus()) {
+      fetchChatting();
+    }
+  }, [postId, navigate]);
+
+  useEffect(() => {
+    // 로그인 상태 확인 함수 (여기서는 토큰 유무를 확인)
+    const checkLoginStatus = () => {
+      return accessToken && refreshToken;
+    };
+
+    if (!checkLoginStatus()) {
+      navigate("/login"); // 로그인되지 않은 경우 로그인 페이지로 이동
+    }
+
+    const fetchChatRoom = async () => {
       try {
         // 채팅방 리스트 불러오기
         const res = await axios.get("http://3.37.120.73:8080/api/v2/rooms", {
@@ -129,12 +144,13 @@ function ChatPage() {
         }
       }
     };
-
-    fetchChatting();
+    if (checkLoginStatus()) {
+      fetchChatRoom();
+    }
     connect();
 
     return () => disconnect();
-  }, [postId, roomId, navigate]);
+  }, [roomId, navigate]);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
