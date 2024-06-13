@@ -191,7 +191,8 @@ function EnrollContent() {
       post.trim() &&
       nowDate !== "날짜" &&
       uploadImgFile &&
-      uploadReceiptFile
+      uploadReceiptFile &&
+      isReceiptValid
     );
     setIsButtonDisabled(isButtonDisabled);
   }, [
@@ -203,6 +204,7 @@ function EnrollContent() {
     nowDate,
     uploadImgFile,
     uploadReceiptFile,
+    isReceiptValid,
     navigate,
   ]);
 
@@ -261,8 +263,8 @@ function EnrollContent() {
 
     try {
       const formData = new FormData();
-      formData.append("receiptImage", uploadReceiptFile);
-      console.log(formData);
+      formData.append("receiptImage", uploadFile);
+      console.log(uploadFile);
       const res = await axios.post(
         "https://f4mib4dy0b.execute-api.ap-northeast-2.amazonaws.com/api/v1/posts/receipt",
         formData,
@@ -270,8 +272,8 @@ function EnrollContent() {
       );
       if (res.status === 200) {
         if (res.data["is_receipt"]) {
-          alert("영수증이 맞습니다");
           setIsReceiptValid(true);
+          alert("영수증이 맞습니다");
         } else {
           setIsReceiptValid(false);
           alert("영수증이 아닙니다");

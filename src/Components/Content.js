@@ -93,7 +93,7 @@ const CloseBtn = styled.div`
 
 const ModalContent = styled.div`
   position: absolute;
-  width: 700px;
+  width: 900px;
   height: 400px;
   top: 50%;
   left: 50%;
@@ -151,6 +151,8 @@ function Content() {
   const [searchValue, setSearchValue] = useState("");
   const accessToken = localStorage.getItem("accessToken");
   const refreshToken = localStorage.getItem("refreshToken");
+  const [activeSection, setActiveSection] = useState("");
+  const [category, setCategory] = useState(""); // 카테고리
 
   useEffect(() => {
     // 서버에서 데이터를 가져오는 비동기 함수
@@ -197,6 +199,30 @@ function Content() {
     // fetchProducts();
   }, []); // 빈 배열을 전달하여 최초 한 번만 실행되도록 설정
 
+  const handleCategoryClick = async (section) => {
+    if (section !== activeSection) {
+      const headers = {
+        ACCESS_TOKEN: `Bearer ${accessToken}`,
+        REFRESH_TOKEN: refreshToken,
+      };
+
+      setActiveSection(section);
+      setCategory(section);
+      setSearchValue("");
+      try {
+        // axios를 사용하여 서버에서 데이터 가져오기
+        const response = await axios.get(
+          `http://3.37.120.73:8080/api/v3/posts/category?category=${section}`,
+          { headers: headers }
+        );
+        console.log(response.data);
+        setProducts(response.data); // 가져온 데이터를 state에 저장
+      } catch (error) {
+        console.error("데이터를 가져오는 중 에러 발생:", error);
+      }
+    }
+  };
+
   // 검색어 이벤트 처리
   const handleSearch = async (event) => {
     const accessToken = localStorage.getItem("accessToken");
@@ -209,6 +235,7 @@ function Content() {
 
     setSearchValue(event.target.value);
     if (event.key === "Enter") {
+      setCategory("");
       try {
         // 엔터 키가 눌렸을 때의 동작 수행
         console.log(searchValue, "를 검색합니다.");
@@ -432,6 +459,21 @@ function Content() {
       </div>
       <ContentWrapper>
         <Contents>우리 동네 식재료</Contents>
+        <div style={{ marginTop: "8px", marginLeft: "10px" }}>
+          <ul id="categoryList">
+            {["육류", "채소", "어패류", "과일"].map((categoryItem, index) => (
+              <li key={index} onClick={() => handleCategoryClick(categoryItem)}>
+                <a
+                  className={`category_item ${
+                    category === categoryItem ? "active" : ""
+                  }`}
+                >
+                  {categoryItem}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </ContentWrapper>
       <ProductList>
         {/* 서버에서 가져온 데이터를 반복하여 각각의 상품을 표시 */}
@@ -474,6 +516,10 @@ function Content() {
           <div style={{ display: "flex" }}>
             <ModalImg
               src={selectedProduct && selectedProduct.productImageUrl}
+            />
+            <ModalImg
+              style={{ width: "200px" }}
+              src={selectedProduct && selectedProduct.receiptImageUrl}
             />
             <div style={{ marginLeft: "15px" }}>
               <ModalPost>
