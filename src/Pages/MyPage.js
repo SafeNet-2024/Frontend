@@ -127,7 +127,10 @@ function MyPage() {
           `http://3.37.120.73:8080/api/v2/mypage/my-posts`,
           { headers: headers }
         );
-        setMyPosts(response.data);
+        console.log(response);
+        if (response.data !== "사용자가 등록한 게시물이 없습니다.") {
+          setMyPosts(response.data);
+        }
       } catch (error) {
         console.error("데이터를 가져오는 중 에러 발생:", error);
       }

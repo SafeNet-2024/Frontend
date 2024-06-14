@@ -214,7 +214,7 @@ function ChatPage() {
     if (
       stompClient.current &&
       stompClient.current.connected &&
-      inputValue &&
+      inputValue.trim() &&
       roomId
     ) {
       const body = { sender: sender, roomId: roomId, message: inputValue };
